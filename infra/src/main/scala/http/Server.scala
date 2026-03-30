@@ -14,7 +14,8 @@ object Server:
   private def resources: Resource[IO, org.http4s.server.Server] =
     for
       sessionService <- Resource.eval(GameSessionService.create())
-      routes          = GameRoutes(sessionService).routes
+      historyService <- Resource.eval(GameHistoryService.create())
+      routes          = GameRoutes(sessionService, historyService).routes
       corsRoutes      = CORS.policy
         .withAllowOriginAll
         .withAllowMethodsAll

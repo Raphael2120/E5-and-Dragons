@@ -40,8 +40,14 @@
   cursor: pointer;
   transition: background 0.2s;
 
-  &:hover:not(:disabled) { background: #246829; }
-  &:disabled { opacity: 0.45; cursor: default; }
+  &:hover:not(:disabled) {
+    background: #246829;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
 }
 
 .app-main {
@@ -53,7 +59,10 @@
 
 .area-map {
   padding: 14px;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .area-stats {

@@ -1,0 +1,17 @@
+<div class="history-panel" *ngIf="game.history().length > 0">
+    <h3>🏆 Historique</h3>
+    <div class="history-list">
+        <div *ngFor="let entry of game.history()" class="history-entry" [class.victory]="entry.result === 'VICTORY'"
+            [class.defeat]="entry.result === 'DEFEAT'">
+            <span class="entry-icon">{{ entry.result === 'VICTORY' ? '🏆' : '💀' }}</span>
+            <div class="entry-details">
+                <div class="entry-date">{{ formatDate(entry.date) }}</div>
+                <div class="entry-stats">
+                    ⭐ {{ entry.gold }} or &nbsp;|&nbsp;
+                    ❤️ {{ entry.finalHp }} HP &nbsp;|&nbsp;
+                    ☠️ {{ entry.villainCount }} ennemis restants
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

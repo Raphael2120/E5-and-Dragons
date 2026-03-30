@@ -18,8 +18,7 @@ case class GameSession(
   rendering:      RefRenderingAdapter,
   dataStorage:    MutableCollectionDataStorageAdapter,
   movementEngine: MovementEngine,
-  fightingEngine: FightingEngine,
-  maxHp:          Int
+  fightingEngine: FightingEngine
 ):
   def currentState: DndMapState =
     movementEngine.getCurrentState
@@ -49,6 +48,6 @@ object GameSession:
         val movementEngine = MovementEngine(initialState, dataStorage, rendering)
         val fightingEngine = FightingEngine(randomness, rendering, dataStorage)
 
-        GameSession(mutex, rendering, dataStorage, movementEngine, fightingEngine, initialState.player.hp)
+        GameSession(mutex, rendering, dataStorage, movementEngine, fightingEngine)
       }
     yield session

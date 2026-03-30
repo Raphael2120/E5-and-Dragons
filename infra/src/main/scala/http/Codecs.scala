@@ -2,6 +2,7 @@ package http
 
 import actions.CardinalDirection
 import characters.{DndCharacter, DndClass, DndRace}
+import history.GameHistoryEntry
 import io.circe.{Decoder, Encoder, Json}
 import io.circe.generic.semiauto.*
 import model.{DndMapState, FightState}
@@ -66,4 +67,13 @@ object Codecs:
       "villainHP" -> Json.fromInt(fs.villainHP),
       "round"     -> Json.fromInt(fs.round),
       "log"       -> Json.fromValues(fs.log.map(Json.fromString))
+    )
+
+  given Encoder[GameHistoryEntry] = Encoder.instance: e =>
+    Json.obj(
+      "date"         -> Json.fromString(e.date),
+      "result"       -> Json.fromString(e.result),
+      "gold"         -> Json.fromInt(e.gold),
+      "finalHp"      -> Json.fromInt(e.finalHp),
+      "villainCount" -> Json.fromInt(e.villainCount)
     )

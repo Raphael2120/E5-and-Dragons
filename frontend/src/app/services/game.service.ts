@@ -1,10 +1,10 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, catchError, of, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   ActionResponse, Direction, FightResult,
-  GameState, NewGameResponse
+  GameState, NewGameResponse, GameHistoryEntry
 } from '../models/game.models';
 
 @Injectable({ providedIn: 'root' })
@@ -13,22 +13,47 @@ export class GameService {
     typeof localStorage !== 'undefined' ? localStorage.getItem('e5-session-id') : null
   );
 
-  readonly state      = signal<GameState | null>(null);
-  readonly log        = signal<string[]>([]);
+  readonly state = signal<GameState | null>(null);
+  readonly log = signal<string[]>([]);
   readonly fightResult = signal<FightResult | null>(null);
   readonly isGameOver = signal<boolean>(false);
-  readonly maxHp      = signal<number>(45);
+  readonly history = signal<GameHistoryEntry[]>([]);
 
   readonly hasSession = computed(() => this.sessionId() !== null);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
+
+  /** Called on app init — try to restore state from an existing session. */
+  restoreSession(): Observable<void> {
+    if (!this.sessionId()) return of(undefined);
+    return this.http.get<{ state: GameState }>(
+      `${environment.apiUrl}/game/state`,
+      { headers: this.headers() }
+    ).pipe(
+      tap(r => this.state.set(r.state)),
+      map(() => undefined),
+      catchError(() => {
+        // Session expired / server restarted → clear stale session
+        this.clearSession();
+        return of(undefined);
+      })
+    );
+  }
+
+  clearSession(): void {
+    this.sessionId.set(null);
+    if (typeof localStorage !== 'undefined') localStorage.removeItem('e5-session-id');
+    this.state.set(null);
+    this.log.set([]);
+    this.fightResult.set(null);
+    this.isGameOver.set(false);
+  }
 
   newGame(): Observable<NewGameResponse> {
     return this.http.post<NewGameResponse>(`${environment.apiUrl}/game/new`, {}).pipe(
       tap(r => {
         this.saveSession(r.sessionId);
         this.state.set(r.state);
-        this.maxHp.set(r.state.player.hp);
         this.log.set([r.welcomeMessage]);
         this.fightResult.set(null);
         this.isGameOver.set(false);
@@ -44,7 +69,6 @@ export class GameService {
       tap(r => {
         this.saveSession(r.sessionId);
         this.state.set(r.state);
-        this.maxHp.set(r.state.player.hp);
         this.log.set([r.welcomeMessage]);
         this.fightResult.set(null);
         this.isGameOver.set(false);
@@ -67,6 +91,12 @@ export class GameService {
     ).pipe(tap(r => this.handleAction(r)));
   }
 
+  loadHistory(): Observable<GameHistoryEntry[]> {
+    return this.http.get<GameHistoryEntry[]>(`${environment.apiUrl}/game/history`).pipe(
+      tap(entries => this.history.set(entries))
+    );
+  }
+
   private handleAction(r: ActionResponse): void {
     this.state.set(r.state);
     if (r.logs.length) {
@@ -75,8 +105,10 @@ export class GameService {
     if (r.fightResult) {
       this.fightResult.set(r.fightResult);
     }
-    if (r.nextAction === 'DEAD') {
-      this.isGameOver.set(true);
+    if (r.nextAction === 'DEAD' || r.nextAction === 'FIGHT_WON') {
+      if (r.nextAction === 'DEAD') this.isGameOver.set(true);
+      // Refresh history from backend after game ends
+      this.loadHistory().subscribe();
     }
   }
 

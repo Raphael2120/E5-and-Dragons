@@ -1,0 +1,63 @@
+.history-panel {
+    padding: 10px 12px;
+
+    h3 {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #d4a820;
+        margin: 0 0 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.history-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: #1a0e03;
+    border: 1px solid #3a2408;
+    font-size: 0.75rem;
+
+    &.victory {
+        border-color: #2e8c34;
+        background: #0d1f0e;
+    }
+
+    &.defeat {
+        border-color: #7a1c1c;
+        background: #1a0808;
+    }
+}
+
+.entry-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.entry-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.entry-date {
+    color: #a08060;
+    font-size: 0.7rem;
+}
+
+.entry-stats {
+    color: #e8d5b0;
+    white-space: nowrap;
+}
