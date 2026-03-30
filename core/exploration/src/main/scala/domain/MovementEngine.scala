@@ -1,7 +1,7 @@
 package domain
 
 import actions.{CardinalDirection, NextAction}
-import in.ForMovingCharacter
+import items.ItemType
 import model.DndMapState
 import out.{ExplorationDataPortOut, ExplorationRenderingPortOut}
 
@@ -9,7 +9,7 @@ class MovementEngine(
   private var currentState: DndMapState,
   dataPortOut: ExplorationDataPortOut,
   renderingPortOut: ExplorationRenderingPortOut
-) extends ForMovingCharacter:
+) extends in.ForMovingCharacter:
 
   def getCurrentState: DndMapState = currentState
 
@@ -35,9 +35,10 @@ class MovementEngine(
     )
 
     val action =
-      if currentState.villains.contains(newPos)    then NextAction.FIGHT
-      else if currentState.npcPositions.contains(newPos) then NextAction.TALK
-      else if currentState.goldPieces.contains(newPos)   then NextAction.LOOT
+      if currentState.villains.contains(newPos)        then NextAction.FIGHT
+      else if currentState.npcPositions.contains(newPos)    then NextAction.TALK
+      else if currentState.goldPieces.contains(newPos)      then NextAction.LOOT
+      else if currentState.itemPositions.contains(newPos)   then NextAction.ITEM
       else NextAction.MOVE
 
     val updatedState =

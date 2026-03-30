@@ -14,6 +14,8 @@ export interface DndCharacter {
   armorClass: number;
   hp: number;
   gold: number;
+  bonusAtk: number;
+  bonusDef: number;
 }
 
 export interface VillainEntry {
@@ -26,9 +28,15 @@ export interface GoldEntry {
   amount: number;
 }
 
+export interface ItemEntry {
+  pos: Position;
+  itemType: 'ATK_POTION' | 'DEF_POTION';
+}
+
 export type Orientation = 'NORTH' | 'SOUTH' | 'EAST' | 'WEST';
 export type Direction = 'NORTH' | 'SOUTH' | 'EAST' | 'WEST';
-export type NextAction = 'FIGHT' | 'MOVE' | 'LOOT' | 'TALK' | 'DEAD' | 'FIGHT_WON';
+export type NextAction = 'FIGHT' | 'MOVE' | 'LOOT' | 'TALK' | 'ITEM' | 'DEAD' | 'FIGHT_WON' | 'VICTORY';
+export type ShopItem = 'HP' | 'ATK' | 'DEF';
 
 export interface GameState {
   width: number;
@@ -39,6 +47,7 @@ export interface GameState {
   villains: VillainEntry[];
   npcPositions: Position[];
   goldPieces: GoldEntry[];
+  itemPositions: ItemEntry[];
 }
 
 export interface FightResult {

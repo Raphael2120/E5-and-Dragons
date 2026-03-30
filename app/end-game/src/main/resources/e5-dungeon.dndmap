@@ -1,23 +1,57 @@
--- Map of 8(width) x 6(height)
--- Origin point is top left
-M - 8 - 6
+-- ═══════════════════════════════════════════════════════════
+-- E5 & Dragons — Carte 12x8 (balancée pour ~50/50)
+-- ═══════════════════════════════════════════════════════════
+-- Joueur : PALADIN lvl 6, 45 HP, AC 13
+-- Analyse de balance :
+--   ATK moyenne joueur : 2D6+D6 ≈ 10.5 base + bonus potions
+--   Ennemis par ordre de difficulté croissante :
+--     ARCHER lv3  : 10 HP, AC 10 → facile (initiation)
+--     ARCHER lv4  : 14 HP, AC 11 → facile
+--     WARRIOR lv5 : 22 HP, AC 13 → moyen
+--     PALADIN lv6 : 30 HP, AC 14 → moyen-dur
+--     WARRIOR lv8 : 40 HP, AC 15 → dur
+--     PALADIN lv9 : 50 HP, AC 16 → très dur
+--     DRAGON/BOSS lv15 : 90 HP, AC 17 → boss final
+--   Ressources disponibles :
+--     NPC x3 (25 HP pour 10 or chacun, réutilisables)
+--     Or des tas : 8+6+10+12+7+9 = 52 or
+--     Or des ennemis : 3+4+6+8+10+12+25 = 68 or
+--     Total or max : 120 → 12 soins NPC possibles si tout ramassé
+--     Potions ATK x3 (+3 chacune = +9 dégâts finaux)
+--     Potions DEF x3 (+2 chacune = +6 CA finale)
+-- ═══════════════════════════════════════════════════════════
 
--- NPC coordinates
-NPC - 2 - 0
-NPC - 6 - 3
+M - 12 - 8
 
--- PC(villain) coordinates: x - y - lvl - race - class - AC - HP  (increasing difficulty)
-PC - 4 - 1 - 3 - HUMAN - PALADIN - 11 - 12
-PC - 1 - 3 - 5 - HUMAN - PALADIN - 13 - 20
-PC - 6 - 1 - 7 - HUMAN - PALADIN - 14 - 30
-PC - 3 - 4 - 9 - HUMAN - PALADIN - 16 - 45
-PC - 7 - 5 - 12 - HUMAN - PALADIN - 18 - 60
+-- NPC coordinates (réutilisables, paient en or)
+NPC - 1 - 2
+NPC - 9 - 1
+NPC - 5 - 6
 
--- Character coordinates (0,0), lvl, race, class, AC, HP, Orientation
+-- PC(villain): x - y - lvl - race - class - AC - HP - gold
+PC -  3 - 1 - 3  - UNDEAD - ARCHER  - 10 - 10 - 3
+PC -  7 - 0 - 4  - UNDEAD - ARCHER  - 11 - 14 - 4
+PC -  2 - 4 - 5  - ORC    - WARRIOR - 13 - 22 - 6
+PC -  8 - 3 - 6  - HUMAN  - PALADIN - 14 - 30 - 8
+PC -  5 - 5 - 8  - ORC    - WARRIOR - 15 - 40 - 10
+PC - 10 - 6 - 9  - HUMAN  - PALADIN - 16 - 50 - 12
+PC - 11 - 7 - 15 - DRAGON - BOSS    - 17 - 90 - 25
+
+-- Character: x - y - lvl - race - class - AC - HP - Orientation
 C - 0 - 0 - 6 - HUMAN - PALADIN - 13 - 45 - S
 
--- Gold Pieces coordinates, amount
-GP - 2 - 2 - 3
-GP - 5 - 0 - 5
-GP - 0 - 5 - 8
-GP - 7 - 2 - 12
+-- Gold Pieces: x - y - amount
+GP -  4 - 0 - 8
+GP -  0 - 3 - 6
+GP -  6 - 2 - 10
+GP -  9 - 5 - 12
+GP -  1 - 7 - 7
+GP - 10 - 2 - 9
+
+-- Items: x - y - ATK/DEF
+IT -  2 - 1 - ATK
+IT -  7 - 4 - ATK
+IT -  4 - 6 - ATK
+IT -  0 - 5 - DEF
+IT -  6 - 1 - DEF
+IT - 10 - 4 - DEF

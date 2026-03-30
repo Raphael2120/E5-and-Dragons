@@ -18,6 +18,8 @@ export class GameService {
   readonly fightResult = signal<FightResult | null>(null);
   readonly isGameOver = signal<boolean>(false);
   readonly history = signal<GameHistoryEntry[]>([]);
+  readonly isShopOpen = signal<boolean>(false);
+  readonly isVictory = signal<boolean>(false);
 
   readonly hasSession = computed(() => this.sessionId() !== null);
 
@@ -47,6 +49,8 @@ export class GameService {
     this.log.set([]);
     this.fightResult.set(null);
     this.isGameOver.set(false);
+    this.isShopOpen.set(false);
+    this.isVictory.set(false);
   }
 
   newGame(): Observable<NewGameResponse> {
@@ -57,6 +61,7 @@ export class GameService {
         this.log.set([r.welcomeMessage]);
         this.fightResult.set(null);
         this.isGameOver.set(false);
+        this.isShopOpen.set(false);
       })
     );
   }
@@ -72,6 +77,7 @@ export class GameService {
         this.log.set([r.welcomeMessage]);
         this.fightResult.set(null);
         this.isGameOver.set(false);
+        this.isShopOpen.set(false);
       })
     );
   }
@@ -97,6 +103,22 @@ export class GameService {
     );
   }
 
+  buyItem(item: string): Observable<ActionResponse> {
+    return this.http.post<ActionResponse>(
+      `${environment.apiUrl}/game/buy`,
+      { item },
+      { headers: this.headers() }
+    ).pipe(
+      tap(r => {
+        this.handleAction(r);
+      })
+    );
+  }
+
+  closeShop(): void {
+    this.isShopOpen.set(false);
+  }
+
   private handleAction(r: ActionResponse): void {
     this.state.set(r.state);
     if (r.logs.length) {
@@ -105,10 +127,14 @@ export class GameService {
     if (r.fightResult) {
       this.fightResult.set(r.fightResult);
     }
-    if (r.nextAction === 'DEAD' || r.nextAction === 'FIGHT_WON') {
-      if (r.nextAction === 'DEAD') this.isGameOver.set(true);
+    if (r.nextAction === 'DEAD' || r.nextAction === 'FIGHT_WON' || r.nextAction === 'VICTORY') {
+      if (r.nextAction === 'DEAD' || r.nextAction === 'VICTORY') this.isGameOver.set(true);
+      if (r.nextAction === 'VICTORY') this.isVictory.set(true);
       // Refresh history from backend after game ends
       this.loadHistory().subscribe();
+    }
+    if (r.nextAction === 'TALK') {
+      this.isShopOpen.set(true);
     }
   }
 

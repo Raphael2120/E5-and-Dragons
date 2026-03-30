@@ -6,6 +6,7 @@ import errors.Death
 import history.GameHistoryEntry
 import io.circe.Json
 import io.circe.syntax.*
+import items.ItemType
 import org.http4s.*
 import org.http4s.circe.*
 import org.http4s.dsl.io.*
@@ -14,6 +15,10 @@ import org.typelevel.ci.CIStringSyntax
 import Codecs.given
 
 class GameRoutes(sessions: GameSessionService, historyService: GameHistoryService):
+
+  // Cost in gold for NPC healing
+  private val NPC_HEAL_COST   = 10
+  private val NPC_HEAL_AMOUNT = 25
 
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
 
@@ -32,20 +37,20 @@ class GameRoutes(sessions: GameSessionService, historyService: GameHistoryServic
               "sessionId"      -> Json.fromString(id),
               "state"          -> state.asJson,
               "welcomeMessage" -> Json.fromString(
-                s"🏰 Bienvenue dans E5 & Dragons ! Carte ${state.width}x${state.height} | ⚔️ Ennemis: ${state.villains.size} | ⭐ Or: ${state.goldPieces.size} tas"
+                s"🏰 Bienvenue dans E5 & Dragons ! Carte ${state.width}x${state.height} | ⚔️ Ennemis: ${state.villains.size} | 💰 NPC soigne ${NPC_HEAL_AMOUNT}HP pour ${NPC_HEAL_COST} 💰"
               )
             ))
         }
       }
 
-    // ── Reset (play again) ──────────────────────────────────────────────────
+    // ── Reset ───────────────────────────────────────────────────────────────
     case req @ POST -> Root / "api" / "game" / "reset" =>
       withSession(req) { session =>
         val id = req.headers.get(ci"X-Session-Id").map(_.head.value).getOrElse("")
         sessions.delete(id) >> sessions.create().flatMap { newId =>
           sessions.get(newId).flatMap {
-            case None    => InternalServerError("Session not found")
-            case Some(s) =>
+            case None     => InternalServerError("Session not found")
+            case Some(s)  =>
               val state = s.currentState
               Ok(Json.obj(
                 "sessionId"      -> Json.fromString(newId),
@@ -80,18 +85,34 @@ class GameRoutes(sessions: GameSessionService, historyService: GameHistoryServic
                     session.movementEngine.updateState(healed)
                     session.dataStorage.saveMapState(healed)
                     session.rendering.renderMapState(healed)
-                    List(s"⭐ Or ramassé ! Total : ${healed.player.gold}  |  ❤️ Soin : HP +10 (total : $healedHp)")
+                    List(s"⭐ Or ramassé ! Total : ${healed.player.gold} 💰  |  ❤️ HP +10 (total : $healedHp)")
+
                   case NextAction.TALK =>
-                    val s        = session.movementEngine.getCurrentState
-                    val healedHp = s.player.hp + 20
-                    val afterNpc = s.copy(
-                      player       = s.player.copy(hp = healedHp),
-                      npcPositions = s.npcPositions.filterNot(_ == s.playerPos)
-                    )
-                    session.movementEngine.updateState(afterNpc)
-                    session.dataStorage.saveMapState(afterNpc)
-                    session.rendering.renderMapState(afterNpc)
-                    List(s"🧙 Le PNJ vous soigne ! HP +20 (total : $healedHp)")
+                    List(s"🧙 Le PNJ vous propose ses marchandises magiques.")
+                  case NextAction.ITEM =>
+                    val s       = session.movementEngine.getCurrentState
+                    val itemOpt = s.itemPositions.get(s.playerPos)
+                    itemOpt match {
+                      case None => List.empty
+                      case Some(item) =>
+                        val (updatedPlayer, logMsg) = item match {
+                          case ItemType.ATK_POTION =>
+                            val p = s.player.copy(bonusAtk = s.player.bonusAtk + 3)
+                            (p, s"⚔️ Potion d'attaque ! ATK +3 (total bonus : ${p.bonusAtk})")
+                          case ItemType.DEF_POTION =>
+                            val p = s.player.copy(bonusDef = s.player.bonusDef + 2)
+                            (p, s"🛡️ Potion de défense ! DEF +2 (CA effective : ${s.player.armorClass + p.bonusDef})")
+                        }
+                        val afterItem = s.copy(
+                          player        = updatedPlayer,
+                          itemPositions = s.itemPositions - s.playerPos
+                        )
+                        session.movementEngine.updateState(afterItem)
+                        session.dataStorage.saveMapState(afterItem)
+                        session.rendering.renderMapState(afterItem)
+                        List(logMsg)
+                    }
+
                   case _ => List.empty
                 }
                 Json.obj(
@@ -102,6 +123,79 @@ class GameRoutes(sessions: GameSessionService, historyService: GameHistoryServic
                 )
               }).flatMap(json => Ok(json))
           }
+        }
+      }
+
+    // ── Buy ─────────────────────────────────────────────────────────────
+    case req @ POST -> Root / "api" / "game" / "buy" =>
+      withSession(req) { session =>
+        req.as[Json].flatMap { body =>
+          val itemOpt = body.hcursor.downField("item").as[String].toOption
+          session.mutex.lock.surround(IO.blocking {
+            val state = session.movementEngine.getCurrentState
+            
+            // Check if player is on an NPC cell
+            if !state.npcPositions.contains(state.playerPos) then
+              Json.obj(
+                "state"       -> state.asJson,
+                "nextAction"  -> Json.fromString("MOVE"),
+                "logs"        -> Json.fromValues(List(Json.fromString("Il n'y a pas de vendeur ici."))),
+                "fightResult" -> Json.Null
+              )
+            else
+              itemOpt match {
+                case Some("HP") =>
+                  if state.player.gold >= 10 then
+                    val p = state.player.copy(hp = state.player.hp + 25, gold = state.player.gold - 10)
+                    val s = state.copy(player = p)
+                    session.movementEngine.updateState(s)
+                    session.dataStorage.saveMapState(s)
+                    session.rendering.renderMapState(s)
+                    Json.obj(
+                      "state"       -> s.asJson,
+                      "nextAction"  -> Json.fromString("TALK"),
+                      "logs"        -> Json.fromValues(List(Json.fromString(s"❤️ +25 HP achetés pour 10 💰. Restant: ${p.gold} 💰"))),
+                      "fightResult" -> Json.Null
+                    )
+                  else
+                    Json.obj("state" -> state.asJson, "nextAction" -> Json.fromString("TALK"), "logs" -> Json.fromValues(List(Json.fromString("Pas assez d'or pour acheter des HP."))), "fightResult" -> Json.Null)
+                
+                case Some("ATK") =>
+                  if state.player.gold >= 15 then
+                    val p = state.player.copy(bonusAtk = state.player.bonusAtk + 1, gold = state.player.gold - 15)
+                    val s = state.copy(player = p)
+                    session.movementEngine.updateState(s)
+                    session.dataStorage.saveMapState(s)
+                    session.rendering.renderMapState(s)
+                    Json.obj(
+                      "state"       -> s.asJson,
+                      "nextAction"  -> Json.fromString("TALK"),
+                      "logs"        -> Json.fromValues(List(Json.fromString(s"⚔️ +1 ATK acheté pour 15 💰."))),
+                      "fightResult" -> Json.Null
+                    )
+                  else
+                    Json.obj("state" -> state.asJson, "nextAction" -> Json.fromString("TALK"), "logs" -> Json.fromValues(List(Json.fromString("Pas assez d'or pour acheter de l'attaque."))), "fightResult" -> Json.Null)
+
+                case Some("DEF") =>
+                  if state.player.gold >= 15 then
+                    val p = state.player.copy(bonusDef = state.player.bonusDef + 1, gold = state.player.gold - 15)
+                    val s = state.copy(player = p)
+                    session.movementEngine.updateState(s)
+                    session.dataStorage.saveMapState(s)
+                    session.rendering.renderMapState(s)
+                    Json.obj(
+                      "state"       -> s.asJson,
+                      "nextAction"  -> Json.fromString("TALK"),
+                      "logs"        -> Json.fromValues(List(Json.fromString(s"🛡️ +1 DEF acheté pour 15 💰."))),
+                      "fightResult" -> Json.Null
+                    )
+                  else
+                    Json.obj("state" -> state.asJson, "nextAction" -> Json.fromString("TALK"), "logs" -> Json.fromValues(List(Json.fromString("Pas assez d'or pour acheter de la défense."))), "fightResult" -> Json.Null)
+
+                case _ =>
+                  Json.obj("state" -> state.asJson, "nextAction" -> Json.fromString("TALK"), "logs" -> Json.fromValues(List(Json.fromString("Article inconnu."))), "fightResult" -> Json.Null)
+              }
+          }).flatMap(json => Ok(json))
         }
       }
 
@@ -150,11 +244,12 @@ class GameRoutes(sessions: GameSessionService, historyService: GameHistoryServic
                   val entry = if isVictory then
                     Some(GameHistoryEntry.now("VICTORY", afterFight.player.gold, healedHp, 0))
                   else None
+                  val villainLabel = villain.dndRace.toString + " " + villain.dndClass.className
                   (Json.obj(
                     "state"       -> afterFight.asJson,
-                    "nextAction"  -> Json.fromString("FIGHT_WON"),
+                    "nextAction"  -> Json.fromString(if isVictory then "VICTORY" else "FIGHT_WON"),
                     "logs"        -> Json.fromValues(List(
-                      Json.fromString(s"⚔️ Victoire ! Or ramassé : ${villain.gold}  |  ❤️ Repos : HP +15 (total : $healedHp)")
+                      Json.fromString(s"⚔️ Victoire contre $villainLabel ! +${villain.gold} 💰  |  ❤️ Repos HP +15 (total : $healedHp)")
                     )),
                     "fightResult" -> Json.obj(
                       "won"            -> Json.fromBoolean(true),
@@ -177,7 +272,6 @@ class GameRoutes(sessions: GameSessionService, historyService: GameHistoryServic
       }
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
   private def sessionId(req: Request[IO]): Option[String] =
     req.headers.get(ci"X-Session-Id").map(_.head.value)
 

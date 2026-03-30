@@ -5,11 +5,13 @@ import { MapComponent } from './components/map/map.component';
 import { StatsComponent } from './components/stats/stats.component';
 import { LogComponent } from './components/log/log.component';
 import { CombatDialogComponent } from './components/combat-dialog/combat-dialog.component';
+import { ShopDialogComponent } from './components/shop-dialog/shop-dialog.component';
+import { VictoryDialogComponent } from './components/victory-dialog/victory-dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MapComponent, StatsComponent, LogComponent, CombatDialogComponent],
+  imports: [CommonModule, MapComponent, StatsComponent, LogComponent, CombatDialogComponent, ShopDialogComponent, VictoryDialogComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

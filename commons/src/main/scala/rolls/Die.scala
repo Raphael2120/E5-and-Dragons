@@ -1,4 +1,4 @@
 package rolls
 
 enum Die:
-  case D20, D6
+  case D4, D6, D8, D10, D20

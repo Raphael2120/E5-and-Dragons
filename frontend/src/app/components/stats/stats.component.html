@@ -18,12 +18,21 @@
 
       <div class="stat-row">
         <span class="stat-label">🛡️ CA</span>
-        <span class="stat-value">{{ s.player.armorClass }}</span>
+        <span class="stat-value">{{ s.player.armorClass + s.player.bonusDef }}
+          <small *ngIf="s.player.bonusDef > 0" style="color:#60b0ff"> (+{{ s.player.bonusDef }})</small>
+        </span>
+      </div>
+
+      <div class="stat-row" *ngIf="s.player.bonusAtk > 0">
+        <span class="stat-label">⚔️ ATK+</span>
+        <span class="stat-value" style="color:#ffa040">+{{ s.player.bonusAtk }}</span>
       </div>
 
       <div class="stat-row">
-        <span class="stat-label">⭐ Or</span>
-        <span class="stat-value gold">{{ s.player.gold }}</span>
+        <span class="stat-label">💰 Or</span>
+        <span class="stat-value gold">{{ s.player.gold }}
+          <small style="color:#a09060"> (PNJ:10💰→25HP)</small>
+        </span>
       </div>
 
       <div class="stat-row">
@@ -36,6 +45,7 @@
         <span class="stat-value small">{{ s.player.dndClass.name }} nv.{{ s.player.dndClass.level }}</span>
       </div>
     </section>
+
 
     <hr class="divider" />
 

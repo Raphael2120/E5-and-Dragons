@@ -1,0 +1,25 @@
+<div class="overlay" *ngIf="isVisible">
+    <div class="dialog">
+        <div class="rays"></div>
+        <div class="confetti-container">
+            <div class="confetti" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]"></div>
+        </div>
+
+        <header>
+            <h2>VICTOIRE !</h2>
+            <div class="dragon-icon">🐲</div>
+        </header>
+
+        <div class="content">
+            <p>Vous avez triomphé du boss final et purifié le donjon !</p>
+            <div class="stats">
+                Gains d'or et de gloire enregistrés dans votre histoire.
+            </div>
+        </div>
+
+        <footer>
+            <button class="btn btn-close" (click)="close()">Fermer</button>
+            <button class="btn btn-primary" (click)="playAgain()">🔄 Rejouer</button>
+        </footer>
+    </div>
+</div>

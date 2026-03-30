@@ -1,0 +1,47 @@
+<div class="overlay" *ngIf="show">
+    <div class="dialog">
+        <div class="dialog__header">
+            <h2>🧙 Le Marchand Ambulant</h2>
+            <button class="btn-close" (click)="close()">✖</button>
+        </div>
+        <div class="dialog__body">
+            <p>Bienvenue l'ami ! J'ai quelques objets magiques à vous vendre si vous avez de l'or.</p>
+            <p class="gold-balance">Vous avez <strong>{{ gold }} 💰</strong></p>
+
+            <div class="shop-items">
+                <!-- HP -->
+                <div class="shop-item">
+                    <div class="item-icon">❤️</div>
+                    <div class="item-info">
+                        <h4>Potion de Vie</h4>
+                        <span>Restaure 25 HP</span>
+                    </div>
+                    <button class="btn-buy" [disabled]="gold < 10" (click)="buy('HP')">10 💰</button>
+                </div>
+
+                <!-- ATK -->
+                <div class="shop-item">
+                    <div class="item-icon">⚔️</div>
+                    <div class="item-info">
+                        <h4>Poudre de Force</h4>
+                        <span>+1 Dégâts d'attaque permanents</span>
+                    </div>
+                    <button class="btn-buy" [disabled]="gold < 15" (click)="buy('ATK')">15 💰</button>
+                </div>
+
+                <!-- DEF -->
+                <div class="shop-item">
+                    <div class="item-icon">🛡️</div>
+                    <div class="item-info">
+                        <h4>Pierre de Garde</h4>
+                        <span>+1 Classe d'Armure (CA) permanente</span>
+                    </div>
+                    <button class="btn-buy" [disabled]="gold < 15" (click)="buy('DEF')">15 💰</button>
+                </div>
+            </div>
+        </div>
+        <div class="dialog__footer">
+            <button class="btn-leave" (click)="close()">Partir</button>
+        </div>
+    </div>
+</div>

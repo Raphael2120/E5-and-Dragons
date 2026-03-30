@@ -3,11 +3,7 @@
   <!-- Header -->
   <header class="app-header">
     <span class="app-logo">🏰 E5 &amp; Dragons</span>
-    <button
-      class="btn-new-game"
-      (click)="startGame()"
-      [disabled]="game.hasSession() && !game.isGameOver()"
-    >
+    <button class="btn-new-game" (click)="startGame()" [disabled]="game.hasSession() && !game.isGameOver()">
       {{ game.hasSession() ? '🔄 Nouvelle partie' : '▶️ Démarrer' }}
     </button>
   </header>
@@ -28,7 +24,9 @@
     <app-log></app-log>
   </footer>
 
-  <!-- Combat overlay -->
+  <!-- Dialogs -->
   <app-combat-dialog></app-combat-dialog>
+  <app-shop-dialog></app-shop-dialog>
+  <app-victory-dialog></app-victory-dialog>
 
 </div>

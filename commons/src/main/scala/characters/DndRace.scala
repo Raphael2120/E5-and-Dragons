@@ -1,4 +1,4 @@
 package characters
 
 enum DndRace:
-  case HUMAN
+  case HUMAN, ORC, UNDEAD, DRAGON

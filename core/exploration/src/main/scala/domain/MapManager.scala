@@ -5,6 +5,7 @@ import characters.{DndCharacter, DndClass, DndRace}
 import errors.MapError
 import errors.MapError.IllegalMapFormat
 import in.ForValidatingMap
+import items.ItemType
 import model.DndMapState
 import out.ExplorationDataPortOut
 
@@ -22,12 +23,23 @@ class MapManager(dataPortOut: ExplorationDataPortOut) extends ForValidatingMap:
       case _   => Left(IllegalMapFormat())
 
     def parseRace(s: String): Either[MapError, DndRace] = s match
-      case "HUMAN" => Right(DndRace.HUMAN)
-      case _       => Left(IllegalMapFormat())
+      case "HUMAN"  => Right(DndRace.HUMAN)
+      case "ORC"    => Right(DndRace.ORC)
+      case "UNDEAD" => Right(DndRace.UNDEAD)
+      case "DRAGON" => Right(DndRace.DRAGON)
+      case _        => Left(IllegalMapFormat())
 
     def parseDndClass(s: String, lvl: Int): Either[MapError, DndClass] = s match
       case "PALADIN" => Right(DndClass.PALADIN(lvl))
+      case "WARRIOR" => Right(DndClass.WARRIOR(lvl))
+      case "ARCHER"  => Right(DndClass.ARCHER(lvl))
+      case "BOSS"    => Right(DndClass.BOSS(lvl))
       case _         => Left(IllegalMapFormat())
+
+    def parseItemType(s: String): Option[ItemType] = s match
+      case "ATK" => Some(ItemType.ATK_POTION)
+      case "DEF" => Some(ItemType.DEF_POTION)
+      case _     => None
 
     def parseInt(s: Option[String]): Either[MapError, Int] =
       s.flatMap(_.toIntOption).toRight(IllegalMapFormat())
@@ -57,46 +69,69 @@ class MapManager(dataPortOut: ExplorationDataPortOut) extends ForValidatingMap:
 
       player = DndCharacter(pRace, pClass, "", pAC, pHP, 0)
 
-      npcPositions = lines.filter(_.startsWith("NPC")).flatMap: l =>
+      npcPositions = lines.filter(_.startsWith("NPC")).flatMap { l =>
         val p = parts(l)
         for
           x <- p.lift(1).flatMap(_.toIntOption)
           y <- p.lift(2).flatMap(_.toIntOption)
         yield (x, y)
+      }
 
-      villains = lines.filter(_.startsWith("PC")).flatMap: l =>
+      villains = lines.filter(_.startsWith("PC")).flatMap { l =>
         val p = parts(l)
         (for
           vx   <- p.lift(1).flatMap(_.toIntOption)
           vy   <- p.lift(2).flatMap(_.toIntOption)
           vLvl <- p.lift(3).flatMap(_.toIntOption)
-          race <- p.lift(4).flatMap:
-            case "HUMAN" => Some(DndRace.HUMAN)
-            case _       => None
-          cls  <- p.lift(5).flatMap:
+          race <- p.lift(4).flatMap {
+            case "HUMAN"  => Some(DndRace.HUMAN)
+            case "ORC"    => Some(DndRace.ORC)
+            case "UNDEAD" => Some(DndRace.UNDEAD)
+            case "DRAGON" => Some(DndRace.DRAGON)
+            case _        => None
+          }
+          cls  <- p.lift(5).flatMap {
             case "PALADIN" => Some(DndClass.PALADIN(vLvl))
+            case "WARRIOR" => Some(DndClass.WARRIOR(vLvl))
+            case "ARCHER"  => Some(DndClass.ARCHER(vLvl))
+            case "BOSS"    => Some(DndClass.BOSS(vLvl))
             case _         => None
+          }
           ac   <- p.lift(6).flatMap(_.toIntOption)
           hp   <- p.lift(7).flatMap(_.toIntOption)
-        yield ((vx, vy), DndCharacter(race, cls, "I will defeat you!", ac, hp, 0)))
+          gold <- p.lift(8).flatMap(_.toIntOption)
+        yield ((vx, vy), DndCharacter(race, cls, "Je vais te vaincre!", ac, hp, gold)))
+      }
 
-      goldPieces = lines.filter(_.startsWith("GP")).flatMap: l =>
+      goldPieces = lines.filter(_.startsWith("GP")).flatMap { l =>
         val p = parts(l)
         for
           gx     <- p.lift(1).flatMap(_.toIntOption)
           gy     <- p.lift(2).flatMap(_.toIntOption)
           amount <- p.lift(3).flatMap(_.toIntOption)
         yield ((gx, gy), amount)
+      }
+
+      itemPositions = lines.filter(_.startsWith("IT")).flatMap { l =>
+        val p = parts(l)
+        for
+          ix       <- p.lift(1).flatMap(_.toIntOption)
+          iy       <- p.lift(2).flatMap(_.toIntOption)
+          typeStr  <- p.lift(3)
+          itemType <- parseItemType(typeStr)
+        yield ((ix, iy), itemType)
+      }
 
       state = DndMapState(
-        width        = width,
-        height       = height,
-        playerPos    = (px, py),
+        width             = width,
+        height            = height,
+        playerPos         = (px, py),
         playerOrientation = pOrient,
-        player       = player,
-        villains     = villains.toMap,
-        npcPositions = npcPositions,
-        goldPieces   = goldPieces.toMap
+        player            = player,
+        villains          = villains.toMap,
+        npcPositions      = npcPositions,
+        goldPieces        = goldPieces.toMap,
+        itemPositions     = itemPositions.toMap
       )
       _ = dataPortOut.saveMapState(state)
     yield ()
