@@ -1,0 +1,48 @@
+<!-- Direction buttons -->
+<div class="controls" *ngIf="game.hasSession()">
+  <div class="btn-row">
+    <button class="btn-dir" (click)="onMove('NORTH')" title="Nord (↑ W)">⬆️ Nord</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn-dir" (click)="onMove('WEST')"  title="Ouest (← A)">⬅️ Ouest</button>
+    <button class="btn-fight" (click)="onFight()"     title="Combat (F)">⚔️ Combat</button>
+    <button class="btn-dir" (click)="onMove('EAST')"  title="Est (→ D)">➡️ Est</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn-dir" (click)="onMove('SOUTH')" title="Sud (↓ S)">⬇️ Sud</button>
+  </div>
+</div>
+
+<!-- Map grid -->
+<div class="map-container" *ngIf="state">
+  <div class="map-grid" [style.grid-template-columns]="'repeat(' + state.width + ', 1fr)'">
+    <div
+      *ngFor="let row of grid; let y = index"
+      class="map-row-wrapper"
+      style="display: contents;"
+    >
+      <div
+        *ngFor="let cell of row; let x = index"
+        class="cell"
+        [class.cell--checkerboard]="(x + y) % 2 === 0"
+        [class.cell--player]="cellType(x, y) === 'player'"
+        [class.cell--villain]="cellType(x, y) === 'villain'"
+        [class.cell--npc]="cellType(x, y) === 'npc'"
+        [class.cell--gold]="cellType(x, y) === 'gold'"
+      >
+        <ng-container [ngSwitch]="cellType(x, y)">
+          <span *ngSwitchCase="'player'" class="cell__icon">
+            ♟️<br><small>{{ orientationArrow() }}</small>
+          </span>
+          <span *ngSwitchCase="'villain'" class="cell__icon">☠️<br><small>ENE</small></span>
+          <span *ngSwitchCase="'npc'"    class="cell__icon">❓<br><small>NPC</small></span>
+          <span *ngSwitchCase="'gold'"   class="cell__icon">⭐<br><small>{{ goldAmount(x, y) }}</small></span>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="no-game" *ngIf="!state">
+  <p>🏰 Aucune partie en cours.</p>
+</div>

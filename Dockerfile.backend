@@ -1,0 +1,35 @@
+# ── Stage 1: Build fat JAR ───────────────────────────────────────────────────
+FROM eclipse-temurin:25-jdk-noble AS build
+
+ARG SBT_VERSION=1.11.7
+RUN apt-get update -qq && apt-get install -y -qq curl && rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL \
+    "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" \
+    | tar xz -C /usr/local \
+    && ln -s /usr/local/sbt/bin/sbt /usr/local/bin/sbt
+
+WORKDIR /build
+
+# Layer 1: dependency cache
+COPY build.sbt .
+COPY project/ project/
+RUN sbt update
+
+# Layer 2: compile + assembly
+COPY . .
+RUN sbt "endGame/assembly"
+
+# ── Stage 2: Minimal runtime ─────────────────────────────────────────────────
+FROM eclipse-temurin:25-jre-noble
+
+RUN apt-get update -qq && apt-get install -y -qq curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=build /build/app/end-game/target/scala-3.7.3/e5-dragons.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", \
+  "-Xmx512m", \
+  "--sun-misc-unsafe-memory-access=allow", \
+  "-jar", "app.jar"]

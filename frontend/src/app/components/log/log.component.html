@@ -1,0 +1,7 @@
+<div class="log-panel">
+  <div class="log-header">📜 Journal</div>
+  <div class="log-body">
+    <div class="log-entry" *ngFor="let entry of game.log()">▶ {{ entry }}</div>
+    <div #logEnd></div>
+  </div>
+</div>

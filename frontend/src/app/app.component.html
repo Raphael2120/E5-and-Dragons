@@ -1,0 +1,34 @@
+<div class="app-shell">
+
+  <!-- Header -->
+  <header class="app-header">
+    <span class="app-logo">🏰 E5 &amp; Dragons</span>
+    <button
+      class="btn-new-game"
+      (click)="startGame()"
+      [disabled]="game.hasSession() && !game.isGameOver()"
+    >
+      {{ game.hasSession() ? '🔄 Nouvelle partie' : '▶️ Démarrer' }}
+    </button>
+  </header>
+
+  <!-- Main layout -->
+  <main class="app-main">
+    <section class="area-map">
+      <app-map></app-map>
+    </section>
+
+    <aside class="area-stats">
+      <app-stats></app-stats>
+    </aside>
+  </main>
+
+  <!-- Log -->
+  <footer class="app-log">
+    <app-log></app-log>
+  </footer>
+
+  <!-- Combat overlay -->
+  <app-combat-dialog></app-combat-dialog>
+
+</div>

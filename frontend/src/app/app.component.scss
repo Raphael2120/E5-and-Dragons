@@ -1,0 +1,65 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #0e0702;
+  color: #e8d5b0;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #1a0e03;
+  border-bottom: 2px solid #3a2408;
+  flex-shrink: 0;
+}
+
+.app-logo {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #d4a820;
+  letter-spacing: 0.04em;
+}
+
+.btn-new-game {
+  background: #1e5c23;
+  color: #fff;
+  border: 1px solid #2e8c34;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) { background: #246829; }
+  &:disabled { opacity: 0.45; cursor: default; }
+}
+
+.app-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  overflow: hidden;
+}
+
+.area-map {
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.area-stats {
+  overflow-y: auto;
+}
+
+.app-log {
+  flex-shrink: 0;
+}

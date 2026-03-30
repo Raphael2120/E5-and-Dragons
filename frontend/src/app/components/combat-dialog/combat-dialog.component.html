@@ -1,0 +1,30 @@
+<div class="overlay" *ngIf="game.fightResult() as fr">
+  <div class="dialog" [class.dialog--won]="fr.won" [class.dialog--lost]="!fr.won">
+
+    <div class="dialog__header">
+      <span class="dialog__icon">{{ fr.won ? '⚔️' : '💀' }}</span>
+      <h2 class="dialog__title">{{ fr.won ? 'Victoire !' : 'Défaite...' }}</h2>
+    </div>
+
+    <div class="dialog__hps">
+      <span class="hp player">❤️ Vos HP : <strong>{{ fr.finalPlayerHp }}</strong></span>
+      <span class="separator">|</span>
+      <span class="hp villain">☠️ HP Ennemi : <strong>{{ fr.finalVillainHp }}</strong></span>
+    </div>
+
+    <div class="dialog__log">
+      <div class="log-entry" *ngFor="let line of fr.combatLog">{{ line }}</div>
+    </div>
+
+    <div class="dialog__actions">
+      <ng-container *ngIf="!game.isGameOver(); else gameOver">
+        <button class="btn btn--primary" (click)="dismiss()">✅ Continuer</button>
+      </ng-container>
+      <ng-template #gameOver>
+        <button class="btn btn--primary" (click)="playAgain()">🔄 Rejouer</button>
+        <button class="btn btn--secondary" (click)="dismiss()">❌ Quitter</button>
+      </ng-template>
+    </div>
+
+  </div>
+</div>

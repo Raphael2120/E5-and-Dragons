@@ -1,0 +1,92 @@
+.stats-panel {
+  background: #120a02;
+  border-left: 1px solid #3a2408;
+  padding: 16px 14px;
+  height: 100%;
+  overflow-y: auto;
+  color: #e8d5b0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.stats-title {
+  font-size: 1.2rem;
+  color: #d4a820;
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #3a2408;
+  margin: 10px 0;
+}
+
+.stat-group {
+  margin-bottom: 8px;
+
+  h3 {
+    font-size: 0.85rem;
+    color: #fff;
+    margin: 0 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.82rem;
+  color: #9a8060;
+}
+
+.stat-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  &.gold   { color: #d4a820; }
+  &.danger { color: #e55; }
+  &.small  { font-size: 0.78rem; font-weight: 400; color: #b0986a; }
+}
+
+.hp-bar {
+  background: #2e1a07;
+  border-radius: 4px;
+  height: 8px;
+  margin: 2px 0 8px;
+  overflow: hidden;
+}
+
+.hp-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease, background 0.4s;
+}
+
+.legend {
+  .legend-row {
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+    &.player  { color: #5090e0; }
+    &.villain { color: #e05050; }
+    &.npc     { color: #50c070; }
+    &.gold    { color: #d4a820; }
+  }
+}
+
+.hint {
+  font-size: 0.78rem;
+  color: #7a6040;
+  margin-bottom: 2px;
+}
+
+.no-state {
+  color: #666;
+  text-align: center;
+  margin-top: 2rem;
+}

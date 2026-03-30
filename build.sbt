@@ -6,35 +6,51 @@ inThisBuild(
     organization      := "io.github.guihardbastien",
     scalaVersion      := scala3Version,
     semanticdbEnabled := true,
-    // Target Java 25 LTS regardless of the JDK used to compile
     scalacOptions     += "-java-output-version:25"
   )
 )
 
-// LIB VERSIONS
-val munitVersion     = "1.2.1"
-val scalaSwingVersion = "3.0.0"
+// ── LIB VERSIONS ─────────────────────────────────────────────────────────────
+val munitVersion      = "1.2.1"
+val http4sVersion     = "0.23.29"
+val circeVersion      = "0.14.10"
+val catsEffectVersion = "3.5.7"
+val logbackVersion    = "1.5.18"
+val munitCEVersion    = "2.0.0"
 
-// DEPENDENCIES
-val munit      = "org.scalameta"        %% "munit"       % munitVersion     % Test
-val scalaSwing = "org.scala-lang.modules" %% "scala-swing" % scalaSwingVersion
+// ── DEPENDENCIES ─────────────────────────────────────────────────────────────
+val munit             = "org.scalameta" %% "munit"               % munitVersion   % Test
+val munitCE           = "org.typelevel" %% "munit-cats-effect"   % munitCEVersion % Test
 
-// APPS
+val http4sEmberServer = "org.http4s"    %% "http4s-ember-server" % http4sVersion
+val http4sDsl         = "org.http4s"    %% "http4s-dsl"          % http4sVersion
+val http4sCirce       = "org.http4s"    %% "http4s-circe"        % http4sVersion
+val circeCore         = "io.circe"      %% "circe-core"          % circeVersion
+val circeGeneric      = "io.circe"      %% "circe-generic"       % circeVersion
+val circeParser       = "io.circe"      %% "circe-parser"        % circeVersion
+val logback           = "ch.qos.logback" % "logback-classic"     % logbackVersion % Runtime
+
+// ── APPS ─────────────────────────────────────────────────────────────────────
 lazy val endGame =
   (project in file("app/end-game"))
     .settings(
-      name := "endGame",
-      libraryDependencies ++= Seq(munit),
-      // Fork a separate JVM so the app classloader is isolated from sbt's
-      // classloader — required for resource loading and Swing to work correctly.
-      run / fork := true,
-      // Suppress sun.misc.Unsafe deprecation warnings introduced in Java 23 (JEP 471).
-      // objectFieldOffset is used internally by Scala's LazyVals mechanism.
-      javaOptions += "--sun-misc-unsafe-memory-access=allow"
+      name      := "endGame",
+      mainClass := Some("Main"),
+      libraryDependencies ++= Seq(munit, logback),
+      javaOptions += "--sun-misc-unsafe-memory-access=allow",
+      // Fat JAR for Docker
+      assembly / assemblyJarName := "e5-dragons.jar",
+      assembly / assemblyMergeStrategy := {
+        case PathList("META-INF", "services", _*) => MergeStrategy.concat
+        case PathList("META-INF", _*)             => MergeStrategy.discard
+        case "reference.conf"                     => MergeStrategy.concat
+        case "logback.xml"                        => MergeStrategy.first
+        case _                                    => MergeStrategy.first
+      }
     )
     .dependsOn(exploration, combat, socialInteraction, infra, commons)
 
-// COMMONS
+// ── COMMONS ───────────────────────────────────────────────────────────────────
 lazy val commons =
   (project in file("commons"))
     .settings(
@@ -42,7 +58,7 @@ lazy val commons =
       libraryDependencies ++= Seq(munit)
     )
 
-// CORE
+// ── CORE ─────────────────────────────────────────────────────────────────────
 lazy val exploration =
   (project in file("core/exploration"))
     .settings(
@@ -67,11 +83,20 @@ lazy val socialInteraction =
     )
     .dependsOn(commons)
 
-// INFRA
+// ── INFRA ─────────────────────────────────────────────────────────────────────
 lazy val infra =
   (project in file("infra/"))
     .settings(
       name := "infra",
-      libraryDependencies ++= Seq(munit, scalaSwing)
+      libraryDependencies ++= Seq(
+        munit,
+        munitCE,
+        http4sEmberServer,
+        http4sDsl,
+        http4sCirce,
+        circeCore,
+        circeGeneric,
+        circeParser
+      )
     )
     .dependsOn(combat, exploration, socialInteraction)

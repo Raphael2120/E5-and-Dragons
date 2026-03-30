@@ -1,9 +1,30 @@
 services:
-  e5-dragons:
-    build: .
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    image: ${REGISTRY_IMAGE:-e5-and-dragons}/backend:latest
     ports:
-      - "6080:6080"   # noVNC web interface → http://<host>:6080/vnc.html
-    restart: on-failure:3
+      - "8080:8080"
     environment:
       - JAVA_OPTS=-Xmx512m
-      - VNC_PASSWORD=${VNC_PASSWORD:-changeme}  # override via .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: ${REGISTRY_IMAGE:-e5-and-dragons}/frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped

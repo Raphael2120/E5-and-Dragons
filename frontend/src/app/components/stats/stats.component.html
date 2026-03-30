@@ -1,0 +1,80 @@
+<div class="stats-panel">
+  <h2 class="stats-title">⚔️ E5 &amp; Dragons</h2>
+  <hr class="divider"/>
+
+  <ng-container *ngIf="game.state() as s; else noState">
+    <section class="stat-group">
+      <h3>🧙 Personnage</h3>
+
+      <div class="stat-row">
+        <span class="stat-label">❤️ HP</span>
+        <span class="stat-value" [style.color]="hpColor">
+          {{ s.player.hp }} / {{ game.maxHp() }}
+        </span>
+      </div>
+      <div class="hp-bar">
+        <div class="hp-fill" [style.width.%]="hpPercent" [style.background]="hpColor"></div>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">🛡️ CA</span>
+        <span class="stat-value">{{ s.player.armorClass }}</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">⭐ Or</span>
+        <span class="stat-value gold">{{ s.player.gold }}</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">📍 Position</span>
+        <span class="stat-value small">({{ s.playerPos.x }}, {{ s.playerPos.y }}) {{ s.playerOrientation }}</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">🎖️ Classe</span>
+        <span class="stat-value small">{{ s.player.dndClass.name }} nv.{{ s.player.dndClass.level }}</span>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <section class="stat-group">
+      <h3>🗺️ Carte</h3>
+      <div class="stat-row">
+        <span class="stat-label">📐 Taille</span>
+        <span class="stat-value small">{{ s.width }}×{{ s.height }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">☠️ Ennemis</span>
+        <span class="stat-value danger">{{ s.villains.length }}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">⭐ Tas d'or</span>
+        <span class="stat-value gold">{{ s.goldPieces.length }}</span>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <section class="stat-group legend">
+      <h3>📖 Légende</h3>
+      <div class="legend-row player">♟️ YOU — vous</div>
+      <div class="legend-row villain">☠️ ENE — ennemi</div>
+      <div class="legend-row npc">❓ NPC — PNJ</div>
+      <div class="legend-row gold">⭐ n — or</div>
+    </section>
+
+    <hr class="divider"/>
+
+    <section class="stat-group">
+      <h3>⌨️ Clavier</h3>
+      <div class="hint">↑↓←→ ou WASD = déplacer</div>
+      <div class="hint">F = combattre</div>
+    </section>
+  </ng-container>
+
+  <ng-template #noState>
+    <p class="no-state">Démarrez une partie !</p>
+  </ng-template>
+</div>

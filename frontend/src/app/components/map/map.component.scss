@@ -1,0 +1,92 @@
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+
+  &:active { transform: scale(0.95); }
+}
+
+.btn-dir {
+  background: #3a2408;
+  color: #f5deb3;
+  border: 1px solid #7a5a30;
+
+  &:hover { background: #4e3210; }
+}
+
+.btn-fight {
+  background: #7a1c1c;
+  color: #fff;
+  border: 1px solid #b02020;
+  padding: 10px 22px;
+
+  &:hover { background: #9a2424; }
+}
+
+.map-container {
+  width: 100%;
+}
+
+.map-grid {
+  display: grid;
+  gap: 2px;
+  border: 2px solid #3a2408;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1a0e05;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e1005;
+  border: 1px solid #2e1a07;
+  transition: background 0.15s;
+
+  &--checkerboard { background: #261408; }
+
+  &--player  { background: #143e8a !important; border-color: #4080e0; }
+  &--villain { background: #7a1c1c !important; border-color: #d03030; }
+  &--npc     { background: #165a2e !important; border-color: #30b060; }
+  &--gold    { background: #5a4400 !important; border-color: #c89a10; }
+}
+
+.cell__icon {
+  font-size: clamp(1rem, 2.5vw, 1.8rem);
+  text-align: center;
+  line-height: 1.2;
+
+  small {
+    display: block;
+    font-size: 0.55em;
+    opacity: 0.85;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+}
+
+.no-game {
+  text-align: center;
+  color: #888;
+  font-size: 1.1rem;
+  padding: 2rem;
+}
