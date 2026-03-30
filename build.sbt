@@ -2,26 +2,35 @@ val scala3Version = "3.7.3"
 
 inThisBuild(
   List(
-    name              := "E5-and-Dragons",
     version           := "0.1.0-SNAPSHOT",
     organization      := "io.github.guihardbastien",
     scalaVersion      := scala3Version,
-    semanticdbEnabled := true
+    semanticdbEnabled := true,
+    // Target Java 25 LTS regardless of the JDK used to compile
+    scalacOptions     += "-java-output-version:25"
   )
 )
 
 // LIB VERSIONS
-val munitVersion = "1.2.1"
+val munitVersion     = "1.2.1"
+val scalaSwingVersion = "3.0.0"
 
 // DEPENDENCIES
-val munit = "org.scalameta" %% "munit" % munitVersion % Test
+val munit      = "org.scalameta"        %% "munit"       % munitVersion     % Test
+val scalaSwing = "org.scala-lang.modules" %% "scala-swing" % scalaSwingVersion
 
 // APPS
 lazy val endGame =
   (project in file("app/end-game"))
     .settings(
       name := "endGame",
-      libraryDependencies ++= Seq(munit)
+      libraryDependencies ++= Seq(munit),
+      // Fork a separate JVM so the app classloader is isolated from sbt's
+      // classloader — required for resource loading and Swing to work correctly.
+      run / fork := true,
+      // Suppress sun.misc.Unsafe deprecation warnings introduced in Java 23 (JEP 471).
+      // objectFieldOffset is used internally by Scala's LazyVals mechanism.
+      javaOptions += "--sun-misc-unsafe-memory-access=allow"
     )
     .dependsOn(exploration, combat, socialInteraction, infra, commons)
 
@@ -59,11 +68,10 @@ lazy val socialInteraction =
     .dependsOn(commons)
 
 // INFRA
-
 lazy val infra =
   (project in file("infra/"))
     .settings(
       name := "infra",
-      libraryDependencies ++= Seq(munit)
+      libraryDependencies ++= Seq(munit, scalaSwing)
     )
     .dependsOn(combat, exploration, socialInteraction)

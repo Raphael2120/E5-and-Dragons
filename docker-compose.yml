@@ -1,0 +1,9 @@
+services:
+  e5-dragons:
+    build: .
+    ports:
+      - "6080:6080"   # noVNC web interface → http://<host>:6080/vnc.html
+    restart: on-failure:3
+    environment:
+      - JAVA_OPTS=-Xmx512m
+      - VNC_PASSWORD=${VNC_PASSWORD:-changeme}  # override via .env
