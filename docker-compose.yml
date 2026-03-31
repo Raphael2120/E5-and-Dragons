@@ -1,14 +1,13 @@
 services:
 
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-    image: ${REGISTRY_IMAGE:-e5-and-dragons}/backend:latest
-    ports:
-      - "8080:8080"
+    image: '${BACKEND_IMAGE:-e5-and-dragons/backend:latest}'
+    pull_policy: always
+    container_name: e5-dragons-backend
     environment:
       - JAVA_OPTS=-Xmx512m
+    ports:
+      - '8080:8080'
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
@@ -18,12 +17,11 @@ services:
       start_period: 40s
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    image: ${REGISTRY_IMAGE:-e5-and-dragons}/frontend:latest
+    image: '${FRONTEND_IMAGE:-e5-and-dragons/frontend:latest}'
+    pull_policy: always
+    container_name: e5-dragons-frontend
     ports:
-      - "80:80"
+      - '80:80'
     depends_on:
       backend:
         condition: service_healthy
